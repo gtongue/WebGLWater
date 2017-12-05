@@ -1,5 +1,6 @@
 import React from 'react';
-import WebGL from '../utils/webgl';
+// import WebGL from '../webgl/webgl';
+import Water from '../water';
 import vertexShader from '../shaders/simple_vs';
 import fragmentShader from '../shaders/simple_fs';
 
@@ -9,11 +10,15 @@ export default class TriangleExample extends React.Component {
   }
 
   componentDidMount(){
-    this.WebGL = new WebGL(this.refs.canvas);
-    this.WebGL.loadVertexShader(vertexShader);
-    this.WebGL.loadFragmentShader(fragmentShader);
-    this.WebGL.createProgram();
-    this.WebGL.drawShape();
+    let canvas = this.refs.canvas;
+    let gl = canvas.getContext("webgl");
+    canvas.width = 1920;
+    canvas.height = 1080;
+
+    gl = canvas.getContext('webgl');
+    gl.viewport(0,0,gl.canvas.width, gl.canvas.height);
+
+    this.Water = new Water(vertexShader, fragmentShader, gl);
   }
 
   render(){
