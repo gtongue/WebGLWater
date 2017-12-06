@@ -1,8 +1,8 @@
 import React from 'react';
-import TriangleExample from './triangle_example';
+import Water from './water';
 
 export default () => (
   <div className = "app">
-    <TriangleExample />
+    <Water />
   </div>
 );
