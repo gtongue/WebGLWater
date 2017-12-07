@@ -21105,7 +21105,7 @@ var Main = function () {
 
     this.waterShader = new _shaderProgram2.default(_water_vs2.default, _water_fs2.default, ["color", "time", "amplitude", "wavelength", "frequency"], ["position", "normal"], GL);
     this.waterRenderer = new _renderer2.default(GL, this.waterShader);
-    this.waterRenderer.addRenderObject(new _water2.default());
+    this.waterRenderer.addRenderObject(new _water2.default(GL, this.waterShader));
 
     this.renderLoop();
   }
@@ -25312,7 +25312,7 @@ exports.default = fs;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var vertexShader = "\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n\nattribute vec3 position;\nattribute vec3 normal;\n\nuniform vec4 color;\nuniform mat4 view;\nuniform mat4 projection;\nuniform mat4 model;\nuniform mat3 normalMatrix;\n\nuniform float time;\nuniform float amplitude;\nuniform float wavelength;\nuniform float frequency;\n\nvarying vec4 vColor;\n\nvec3 waves;\nvec3 waveNormals;\nfloat numWaves = 0.0;\n\nvoid gerstnerWave(float steepness, float A, float W, float F, vec2 D){\n  float w = 2.0*3.141592/W;\n  float Q = steepness / (w * A);\n  float dotD = dot(position.xz, D);\n  // float dotD = dot(vec2(position.x*rotation + position.z*(1.0-rotation),position.x*(1.0-rotation) + position.z * rotation), D);\n\n  float cosine = cos(w * dotD + time * F);\n  float sine = sin(w * dotD + time * F);\n\n  vec3 wave = vec3(position.x + Q * A * D.x * cosine , A * sine, position.z + Q * A* cosine *D.y);\n  waves += wave;\n\n  vec3 waveNormal = vec3((D.x * w * A * cosine), (D.y * w * A * cosine), 1.0 + (Q * w * A * sine));\n  waveNormals += waveNormal;\n\n  numWaves++;\n}\n\nvoid main() {\n  vec3 n = normal;\n  \n  gerstnerWave(1.0, amplitude, wavelength, frequency, vec2(1.0,0.0));\n  gerstnerWave(1.0, amplitude, wavelength, frequency * .7, vec2(.7,0.3));\n  gerstnerWave(1.0, amplitude, -wavelength, frequency * 3.1, vec2(.5,0.5));\n  gerstnerWave(1.0, amplitude, 1.1* wavelength, frequency * 2.1, vec2(0.0,1.0));\n  gerstnerWave(1.0, amplitude, 2.1* wavelength, frequency * 4.1, vec2(.6,0.4));\n  gerstnerWave(1.0, amplitude, -3.1*wavelength, frequency * 1.5, vec2(.8,0.2));\n  gerstnerWave(1.0, amplitude, -.5*wavelength, frequency * 1.3, vec2(.45,0.55));\n  gerstnerWave(1.0, amplitude, .8*wavelength, frequency * 1.2, vec2(.37,0.63));\n\n  waves = vec3(waves.x/numWaves, waves.y, waves.z/numWaves);\n  waveNormals /= numWaves;\n  gl_Position =  projection * view * model * vec4(waves, 1.0);  \n\n  // vec3 otherNormal = vec3(-clamp(waves.y, -1.0, 1.0) , clamp(waves.y, -1.0, 1.0), 1);\n  // vec3 N = normalize(normalMatrix * waveNormals);\n  // float dotProduct = abs(N.z);\n  // dotProduct = clamp(dotProduct, 0.65, 1.0);\n\n  vec3 ambientLight = vec3(0.5, 0.5, 0.5);\n  vec3 directionalLightColor = vec3(.35, .35, .35);\n  vec3 directionalVector = normalize(vec3(0.0, -0.8, 0.75));\n\n  vec3 transformedNormal = normalMatrix * waveNormals;\n\n  float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);\n  vec3 lighting = ambientLight + (directionalLightColor * directional);\n\n  vColor = vec4(lighting * color.rgb, color.a);\n}\n\n";
+var vertexShader = "\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n\nattribute vec3 position;\nattribute vec3 normal;\n\nuniform vec4 color;\nuniform mat4 view;\nuniform mat4 projection;\nuniform mat4 model;\nuniform mat3 normalMatrix;\n\nuniform float time;\nuniform float amplitude;\nuniform float wavelength;\nuniform float frequency;\n\nvarying vec4 vColor;\n\nvec3 waves;\nvec3 waveNormals;\nfloat numWaves = 0.0;\n\nvoid gerstnerWave(float steepness, float A, float W, float F, vec2 D){\n  float w = 2.0*3.141592/W;\n  float Q = steepness / (w * A);\n  float dotD = dot(position.xz, D);\n  // float dotD = dot(vec2(position.x*rotation + position.z*(1.0-rotation),position.x*(1.0-rotation) + position.z * rotation), D);\n\n  float cosine = cos(w * dotD + time * F);\n  float sine = sin(w * dotD + time * F);\n\n  vec3 wave = vec3(position.x + Q * A * D.x * cosine , A * sine, position.z + Q * A* cosine *D.y);\n  waves += wave;\n\n  vec3 waveNormal = vec3((D.x * w * A * cosine), (D.y * w * A * cosine), 1.0 + (Q * w * A * sine));\n  waveNormals += waveNormal;\n\n  numWaves++;\n}\n\nvoid main() {  \n  gerstnerWave(1.0, amplitude, wavelength, frequency, vec2(1.0,0.0));\n  gerstnerWave(1.0, amplitude, wavelength, frequency * .7, vec2(.7,0.3));\n  gerstnerWave(1.0, amplitude, -wavelength, frequency * 3.1, vec2(.5,0.5));\n  gerstnerWave(1.0, amplitude, 1.1* wavelength, frequency * 2.1, vec2(0.0,1.0));\n  gerstnerWave(1.0, amplitude, 2.1* wavelength, frequency * 4.1, vec2(.6,0.4));\n  gerstnerWave(1.0, amplitude, -3.1*wavelength, frequency * 1.5, vec2(.8,0.2));\n  gerstnerWave(1.0, amplitude, -.5*wavelength, frequency * 1.3, vec2(.45,0.55));\n  gerstnerWave(1.0, amplitude, .8*wavelength, frequency * 1.2, vec2(.37,0.63));\n\n  waves = vec3(waves.x/numWaves, waves.y, waves.z/numWaves);\n  waveNormals /= numWaves;\n  gl_Position =  projection * view * model * vec4(waves, 1.0);  \n\n  // vec3 otherNormal = vec3(-clamp(waves.y, -1.0, 1.0) , clamp(waves.y, -1.0, 1.0), 1);\n  // vec3 N = normalize(normalMatrix * waveNormals);\n  // float dotProduct = abs(N.z);\n  // dotProduct = clamp(dotProduct, 0.65, 1.0);\n\n  vec3 ambientLight = vec3(0.5, 0.5, 0.5);\n  vec3 directionalLightColor = vec3(.35, .35, .35);\n  vec3 directionalVector = normalize(vec3(0.0, -0.8, 0.75));\n\n  vec3 transformedNormal = normalMatrix * waveNormals;\n\n  float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);\n  vec3 lighting = ambientLight + (directionalLightColor * directional);\n\n  vColor = vec4(lighting * color.rgb, color.a);\n}\n\n";
 
 exports.default = vertexShader;
 
@@ -25508,37 +25508,59 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Water = function (_Renderable) {
   _inherits(Water, _Renderable);
 
-  function Water() {
+  function Water(GL, shader) {
     _classCallCheck(this, Water);
 
     var _this = _possibleConstructorReturn(this, (Water.__proto__ || Object.getPrototypeOf(Water)).call(this, _glMatrix.vec3.fromValues(-10, 0, 0), _glMatrix.vec3.fromValues(0, 0, 0), _glMatrix.vec3.fromValues(1, 1, 1)));
 
+    _this.GL = GL;
     _this.plane = (0, _geometryGenerator.generatePlane)();
+    _this.uniforms = {
+      color: shader.uniforms["color"],
+      time: shader.uniforms["time"],
+      amplitude: shader.uniforms["amplitude"],
+      frequency: shader.uniforms["frequency"],
+      wavelength: shader.uniforms["wavelength"]
+    };
+
+    _this.attributes = {
+      position: shader.attributes["position"]
+    };
+    _this.initBuffers();
     return _this;
   }
 
   _createClass(Water, [{
+    key: "initBuffers",
+    value: function initBuffers() {
+      this.vertexBuffer = this.GL.createBuffer();
+      this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.vertexBuffer);
+      this.GL.bufferData(this.GL.ARRAY_BUFFER, this.plane.vertices, this.GL.STREAM_DRAW);
+
+      this.indexBuffer = this.GL.createBuffer();
+      this.GL.bindBuffer(this.GL.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+      this.GL.bufferData(this.GL.ELEMENT_ARRAY_BUFFER, this.plane.indices, this.GL.STATIC_DRAW);
+    }
+  }, {
     key: "render",
     value: function render(deltaTime, totalTime, shader, GL, viewMatrix, projectionMatrix) {
       _get(Water.prototype.__proto__ || Object.getPrototypeOf(Water.prototype), "render", this).call(this, deltaTime, totalTime, shader, GL);
-      var uColor = shader.uniforms["color"];
-      var uTime = shader.uniforms["time"];
-      var uAmplitude = shader.uniforms["amplitude"];
-      var uFrequency = shader.uniforms["frequency"];
-      var uWavelength = shader.uniforms["wavelength"];
+      var uColor = this.uniforms.color;
+      var uTime = this.uniforms.time;
+      var uAmplitude = this.uniforms.amplitude;
+      var uFrequency = this.uniforms.frequency;
+      var uWavelength = this.uniforms.wavelength;
 
-      var aPosition = shader.attributes["position"];
-      var aNormal = shader.attributes["normal"];
+      var aPosition = this.attributes.position;
 
-      var vertexBuffer = this.GL.createBuffer();
-      this.GL.bindBuffer(this.GL.ARRAY_BUFFER, vertexBuffer);
-      this.GL.bufferData(this.GL.ARRAY_BUFFER, this.plane.vertices, this.GL.STREAM_DRAW);
+      this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.vertexBuffer);
       this.GL.vertexAttribPointer(aPosition, 3, this.GL.FLOAT, false, 0, 0);
 
-      var normalBuffer = this.GL.createBuffer();
-      this.GL.bindBuffer(this.GL.ARRAY_BUFFER, normalBuffer);
-      this.GL.bufferData(this.GL.ARRAY_BUFFER, this.plane.normals, this.GL.STATIC_DRAW);
-      this.GL.vertexAttribPointer(aNormal, 3, this.GL.FLOAT, false, 0, 0);
+      // let aNormal = shader.attributes["normal"];
+      // let normalBuffer = this.GL.createBuffer();
+      // this.GL.bindBuffer(this.GL.ARRAY_BUFFER, normalBuffer);
+      // this.GL.bufferData(this.GL.ARRAY_BUFFER, this.plane.normals, this.GL.STATIC_DRAW);
+      // this.GL.vertexAttribPointer(aNormal, 3, this.GL.FLOAT, false, 0, 0);
 
       var modelViewMatrix = _glMatrix.mat4.create();
       _glMatrix.mat4.multiply(modelViewMatrix, viewMatrix, this.modelMatrix);
@@ -25562,9 +25584,7 @@ var Water = function (_Renderable) {
 
       this.GL.uniform1f(uTime, totalTime);
 
-      var indexBuffer = this.GL.createBuffer();
-      this.GL.bindBuffer(this.GL.ELEMENT_ARRAY_BUFFER, indexBuffer);
-      this.GL.bufferData(this.GL.ELEMENT_ARRAY_BUFFER, this.plane.indices, this.GL.STATIC_DRAW);
+      this.GL.bindBuffer(this.GL.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
       this.GL.drawElements(this.primativeType, this.plane.indices.length, this.GL.UNSIGNED_SHORT, 0);
     }
   }]);
