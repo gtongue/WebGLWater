@@ -3476,7 +3476,7 @@ var ShaderProgram = function () {
       this.GL.useProgram(this.program);
       var attrs = Object.keys(this.attributes);
       attrs.forEach(function (attr) {
-        _this2.GL.enableVertexAttribArray(attr);
+        _this2.GL.enableVertexAttribArray(_this2.attributes[attr]);
       });
     }
   }, {
@@ -3484,7 +3484,6 @@ var ShaderProgram = function () {
     value: function stop() {
       var _this3 = this;
 
-      // this.GL.useProgram(0);
       var attrs = Object.keys(this.attributes);
       attrs.forEach(function (attr) {
         _this3.GL.disableVertexAttribArray(attr);
@@ -21063,6 +21062,10 @@ var _cube = __webpack_require__(48);
 
 var _cube2 = _interopRequireDefault(_cube);
 
+var _newCube = __webpack_require__(58);
+
+var _newCube2 = _interopRequireDefault(_newCube);
+
 var _water = __webpack_require__(49);
 
 var _water2 = _interopRequireDefault(_water);
@@ -21094,16 +21097,17 @@ var Main = function () {
     this.projectionMatrix = _glMatrix.mat4.create();
     this.createProjectionMatrix();
 
-    this.camera = new _camera2.default([0, 8, 27], [0, 0, 0], [0, 1, 0]);
+    this.camera = new _camera2.default([0, 15, 27], [0, 0, 0], [0, 1, 0]);
 
-    this.cubeShader = new _shaderProgram2.default(_simple_vs2.default, _simple_fs2.default, ["color"], ["position"], GL);
+    this.cubeShader = new _shaderProgram2.default(_simple_vs2.default, _simple_fs2.default, ["color"], ["position", "normal"], GL);
     this.cubeRenderer = new _renderer2.default(GL, this.cubeShader);
-    var cube = new _cube2.default();
+    var cube = new _newCube2.default(GL, this.cubeShader);
+
     window.cube = cube;
-    cube.translate(0, 10, 0);
+    // cube.translate(0,10,0);
     this.cubeRenderer.addRenderObject(cube);
 
-    this.waterShader = new _shaderProgram2.default(_water_vs2.default, _water_fs2.default, ["color", "time", "amplitude", "wavelength", "frequency"], ["position", "normal"], GL);
+    this.waterShader = new _shaderProgram2.default(_water_vs2.default, _water_fs2.default, ["color", "time", "amplitude", "wavelength", "frequency"], ["position"], GL);
     this.waterRenderer = new _renderer2.default(GL, this.waterShader);
     this.waterRenderer.addRenderObject(new _water2.default(GL, this.waterShader));
 
@@ -21127,12 +21131,14 @@ var Main = function () {
 
       this.cubeShader.start();
 
-      this.cubeRenderer.render(this.deltaTime, this.totalTime, this.cubeShader, viewMatrix, this.projectionMatrix);
+      this.cubeRenderer.render(this.deltaTime, this.totalTime, viewMatrix, this.projectionMatrix);
 
       this.cubeShader.stop();
 
       this.waterShader.start();
-      this.waterRenderer.render(this.deltaTime, this.totalTime, this.waterShader, viewMatrix, this.projectionMatrix);
+
+      this.waterRenderer.render(this.deltaTime, this.totalTime, viewMatrix, this.projectionMatrix);
+
       this.waterShader.stop();
     }
   }, {
@@ -21191,7 +21197,7 @@ var Renderer = function () {
     _classCallCheck(this, Renderer);
 
     this.GL = GL;
-    this.shaderProgram = shaderProgram;
+    this.shader = shaderProgram;
     this.renderObjects = [];
   }
 
@@ -21202,14 +21208,12 @@ var Renderer = function () {
     }
   }, {
     key: "render",
-    value: function render(deltaTime, totalTime, shader, viewMatrix, projectionMatrix) {
-      var _this = this;
-
-      this.GL.uniformMatrix4fv(shader.uniforms["view"], false, viewMatrix);
-      this.GL.uniformMatrix4fv(shader.uniforms["projection"], false, projectionMatrix);
+    value: function render(deltaTime, totalTime, viewMatrix, projectionMatrix) {
+      this.GL.uniformMatrix4fv(this.shader.uniforms["view"], false, viewMatrix);
+      this.GL.uniformMatrix4fv(this.shader.uniforms["projection"], false, projectionMatrix);
 
       this.renderObjects.forEach(function (renderObject) {
-        renderObject.render(deltaTime, totalTime, shader, _this.GL, viewMatrix, projectionMatrix);
+        renderObject.render(deltaTime, totalTime, viewMatrix, projectionMatrix);
       });
     }
 
@@ -25282,9 +25286,9 @@ const forEach = (function() {
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
-var vertexShader = "\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n\nattribute vec3 position;\nuniform mat4 view;\nuniform mat4 projection;\nuniform mat4 model;\nuniform float time;\n\nvoid main() {\n    // gl_Position =  projection * view * model * vec4(position.x, position.y + sin(time/2.0 + position.x) * cos(time + position.z), position.z, 1.0);    \n  gl_Position =  projection * view * model * vec4(position, 1.0);\n}\n";
+var vertexShader = "\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n\nattribute vec3 position;\nattribute vec3 normal;\n\nuniform mat4 view;\nuniform mat4 projection;\nuniform mat4 model;\nuniform mat3 normalMatrix;\nuniform vec4 color;\n\nvarying vec4 vColor;\n\nvoid main() {\n  vec3 test = normal;\n\n  vec3 ambientLight = vec3(0.35, 0.35, 0.35);\n  vec3 directionalLightColor = vec3(.85, 0.85, .85);\n  vec3 directionalVector = normalize(vec3(0.85, -0.8, 0.75));\n  \n  vec3 transformedNormal = normalMatrix * normal;\n\n  float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);\n  vec3 lighting = ambientLight + (directionalLightColor * directional);\n\n  vColor = vec4(lighting * color.rgb, color.a);\n\n  gl_Position =  projection * view * model * vec4(position, 1.0);\n}\n";
 
 exports.default = vertexShader;
 
@@ -25298,7 +25302,7 @@ exports.default = vertexShader;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var fs = "\nprecision highp float;\nuniform vec4 color;\nvoid main() {\n  gl_FragColor = color;\n}\n";
+var fs = "\nprecision highp float;\nuniform vec4 color;\nvarying vec4 vColor;\n\nvoid main() {\n  // gl_FragColor = color;\n  gl_FragColor = vColor;  \n}\n";
 
 exports.default = fs;
 
@@ -25312,7 +25316,7 @@ exports.default = fs;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var vertexShader = "\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n\nattribute vec3 position;\nattribute vec3 normal;\n\nuniform vec4 color;\nuniform mat4 view;\nuniform mat4 projection;\nuniform mat4 model;\nuniform mat3 normalMatrix;\n\nuniform float time;\nuniform float amplitude;\nuniform float wavelength;\nuniform float frequency;\n\nvarying vec4 vColor;\n\nvec3 waves;\nvec3 waveNormals;\nfloat numWaves = 0.0;\n\nvoid gerstnerWave(float steepness, float A, float W, float F, vec2 D){\n  float w = 2.0*3.141592/W;\n  float Q = steepness / (w * A);\n  float dotD = dot(position.xz, D);\n  // float dotD = dot(vec2(position.x*rotation + position.z*(1.0-rotation),position.x*(1.0-rotation) + position.z * rotation), D);\n\n  float cosine = cos(w * dotD + time * F);\n  float sine = sin(w * dotD + time * F);\n\n  vec3 wave = vec3(position.x + Q * A * D.x * cosine , A * sine, position.z + Q * A* cosine *D.y);\n  waves += wave;\n\n  vec3 waveNormal = vec3((D.x * w * A * cosine), (D.y * w * A * cosine), 1.0 + (Q * w * A * sine));\n  waveNormals += waveNormal;\n\n  numWaves++;\n}\n\nvoid main() {  \n  gerstnerWave(1.0, amplitude, wavelength, frequency, vec2(1.0,0.0));\n  gerstnerWave(1.0, amplitude, wavelength, frequency * .7, vec2(.7,0.3));\n  gerstnerWave(1.0, amplitude, -wavelength, frequency * 3.1, vec2(.5,0.5));\n  gerstnerWave(1.0, amplitude, 1.1* wavelength, frequency * 2.1, vec2(0.0,1.0));\n  gerstnerWave(1.0, amplitude, 2.1* wavelength, frequency * 4.1, vec2(.6,0.4));\n  gerstnerWave(1.0, amplitude, -3.1*wavelength, frequency * 1.5, vec2(.8,0.2));\n  gerstnerWave(1.0, amplitude, -.5*wavelength, frequency * 1.3, vec2(.45,0.55));\n  gerstnerWave(1.0, amplitude, .8*wavelength, frequency * 1.2, vec2(.37,0.63));\n\n  waves = vec3(waves.x/numWaves, waves.y, waves.z/numWaves);\n  waveNormals /= numWaves;\n  gl_Position =  projection * view * model * vec4(waves, 1.0);  \n\n  // vec3 otherNormal = vec3(-clamp(waves.y, -1.0, 1.0) , clamp(waves.y, -1.0, 1.0), 1);\n  // vec3 N = normalize(normalMatrix * waveNormals);\n  // float dotProduct = abs(N.z);\n  // dotProduct = clamp(dotProduct, 0.65, 1.0);\n\n  vec3 ambientLight = vec3(0.5, 0.5, 0.5);\n  vec3 directionalLightColor = vec3(.35, .35, .35);\n  vec3 directionalVector = normalize(vec3(0.0, -0.8, 0.75));\n\n  vec3 transformedNormal = normalMatrix * waveNormals;\n\n  float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);\n  vec3 lighting = ambientLight + (directionalLightColor * directional);\n\n  vColor = vec4(lighting * color.rgb, color.a);\n}\n\n";
+var vertexShader = "\n#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n\nattribute vec3 position;\nattribute vec3 normal;\n\nuniform vec4 color;\nuniform mat4 view;\nuniform mat4 projection;\nuniform mat4 model;\nuniform mat3 normalMatrix;\n\nuniform float time;\nuniform float amplitude;\nuniform float wavelength;\nuniform float frequency;\n\nvarying vec4 vColor;\n\nvec3 waves;\nvec3 waveNormals;\nfloat numWaves = 0.0;\n\nvoid gerstnerWave(float steepness, float A, float W, float F, vec2 D){\n  float w = 2.0*3.141592/W;\n  float Q = steepness / (w * A);\n  float dotD = dot(position.xz, D);\n  // float dotD = dot(vec2(position.x*rotation + position.z*(1.0-rotation),position.x*(1.0-rotation) + position.z * rotation), D);\n\n  float cosine = cos(w * dotD + time * F);\n  float sine = sin(w * dotD + time * F);\n\n  vec3 wave = vec3(position.x + Q * A * D.x * cosine , A * sine, position.z + Q * A* cosine *D.y);\n  waves += wave;\n\n  vec3 waveNormal = vec3((D.x * w * A * cosine), (D.y * w * A * cosine), 1.0 + (Q * w * A * sine));\n  waveNormals += waveNormal;\n\n  numWaves++;\n}\n\nvoid main() {  \n  gerstnerWave(1.0, amplitude, wavelength, frequency, vec2(1.0,0.0));\n  gerstnerWave(1.0, amplitude, wavelength, frequency * .7, vec2(.7,0.3));\n  gerstnerWave(1.0, amplitude, -wavelength, frequency * 3.1, vec2(.5,0.5));\n  gerstnerWave(1.0, amplitude, 1.1* wavelength, frequency * 2.1, vec2(0.0,1.0));\n  gerstnerWave(1.0, amplitude, 2.1* wavelength, frequency * 4.1, vec2(.6,0.4));\n  gerstnerWave(1.0, amplitude, -3.1*wavelength, frequency * 1.5, vec2(.8,0.2));\n  gerstnerWave(1.0, amplitude, -.5*wavelength, frequency * 1.3, vec2(.45,0.55));\n  gerstnerWave(1.0, amplitude, .8*wavelength, frequency * 1.2, vec2(.37,0.63));\n\n  waves = vec3(waves.x/numWaves, waves.y, waves.z/numWaves);\n  waveNormals /= numWaves;\n  gl_Position =  projection * view * model * vec4(vec3(clamp(waves.x, 0.1, 19.9), waves.y, clamp(waves.z, 0.1, 19.9)), 1.0);  \n\n  // vec3 otherNormal = vec3(-clamp(waves.y, -1.0, 1.0) , clamp(waves.y, -1.0, 1.0), 1);\n  // vec3 N = normalize(normalMatrix * waveNormals);\n  // float dotProduct = abs(N.z);\n  // dotProduct = clamp(dotProduct, 0.65, 1.0);\n\n  vec3 ambientLight = vec3(0.5, 0.5, 0.5);\n  vec3 directionalLightColor = vec3(.35, .35, .35);\n  vec3 directionalVector = normalize(vec3(0.0, -0.8, 0.75));\n\n  vec3 transformedNormal = normalMatrix * waveNormals;\n\n  float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);\n  vec3 lighting = ambientLight + (directionalLightColor * directional);\n\n  vColor = vec4(lighting * color.rgb, color.a);\n}\n\n";
 
 exports.default = vertexShader;
 
@@ -25514,6 +25518,7 @@ var Water = function (_Renderable) {
     var _this = _possibleConstructorReturn(this, (Water.__proto__ || Object.getPrototypeOf(Water)).call(this, _glMatrix.vec3.fromValues(-10, 0, 0), _glMatrix.vec3.fromValues(0, 0, 0), _glMatrix.vec3.fromValues(1, 1, 1)));
 
     _this.GL = GL;
+    _this.shader = shader;
     _this.plane = (0, _geometryGenerator.generatePlane)();
     _this.uniforms = {
       color: shader.uniforms["color"],
@@ -25543,8 +25548,8 @@ var Water = function (_Renderable) {
     }
   }, {
     key: "render",
-    value: function render(deltaTime, totalTime, shader, GL, viewMatrix, projectionMatrix) {
-      _get(Water.prototype.__proto__ || Object.getPrototypeOf(Water.prototype), "render", this).call(this, deltaTime, totalTime, shader, GL);
+    value: function render(deltaTime, totalTime, viewMatrix, projectionMatrix) {
+      _get(Water.prototype.__proto__ || Object.getPrototypeOf(Water.prototype), "render", this).call(this, deltaTime, totalTime, viewMatrix, projectionMatrix);
       var uColor = this.uniforms.color;
       var uTime = this.uniforms.time;
       var uAmplitude = this.uniforms.amplitude;
@@ -25562,13 +25567,6 @@ var Water = function (_Renderable) {
       // this.GL.bufferData(this.GL.ARRAY_BUFFER, this.plane.normals, this.GL.STATIC_DRAW);
       // this.GL.vertexAttribPointer(aNormal, 3, this.GL.FLOAT, false, 0, 0);
 
-      var modelViewMatrix = _glMatrix.mat4.create();
-      _glMatrix.mat4.multiply(modelViewMatrix, viewMatrix, this.modelMatrix);
-
-      var normalMatrix = _glMatrix.mat3.create();
-      _glMatrix.mat3.normalFromMat4(normalMatrix, viewMatrix);
-
-      this.GL.uniformMatrix3fv(shader.uniforms["normalMatrix"], false, normalMatrix);
 
       this.GL.uniform4fv(uColor, [.15, .4, .75, 1]);
 
@@ -25638,10 +25636,15 @@ var Renderable = function () {
     }
   }, {
     key: "render",
-    value: function render(deltaTime, totalTime, shader, GL, viewMatrix, projectionMatrix) {
-      this.GL = GL;
+    value: function render(deltaTime, totalTime, viewMatrix, projectionMatrix) {
       this.updateModelMatrix();
-      this.GL.uniformMatrix4fv(shader.uniforms["model"], false, this.modelMatrix);
+      this.GL.uniformMatrix4fv(this.shader.uniforms["model"], false, this.modelMatrix);
+      var modelViewMatrix = _glMatrix.mat4.create();
+      _glMatrix.mat4.multiply(modelViewMatrix, viewMatrix, this.modelMatrix);
+
+      var normalMatrix = _glMatrix2.mat3.create();
+      _glMatrix2.mat3.normalFromMat4(normalMatrix, viewMatrix);
+      this.GL.uniformMatrix3fv(this.shader.uniforms["normalMatrix"], false, normalMatrix);
     }
   }, {
     key: "wifreframeOn",
@@ -25740,6 +25743,81 @@ var generatePlane = exports.generatePlane = function generatePlane() {
     vertices: verticesBuffer,
     indices: indicesBuffer,
     normals: normalsBuffer
+  };
+};
+
+var generateCube = exports.generateCube = function generateCube() {
+  var vertices = [];
+  var indices = [];
+  var normals = [];
+
+  vertices.push(-1, -1, -1);
+  normals.push(0.0, 0.0, -1.0);
+  vertices.push(-1, 1, -1);
+  normals.push(0.0, 0.0, -1.0);
+  vertices.push(1, 1, -1);
+  normals.push(0.0, 0.0, -1.0);
+  vertices.push(1, -1, -1);
+  normals.push(0.0, 0.0, -1.0);
+
+  vertices.push(-1, -1, 1);
+  normals.push(0.0, 0.0, 1.0);
+  vertices.push(1, -1, 1);
+  normals.push(0.0, 0.0, 1.0);
+  vertices.push(1, 1, 1);
+  normals.push(0.0, 0.0, 1.0);
+  vertices.push(-1, 1, 1);
+  normals.push(0.0, 0.0, 1.0);
+
+  vertices.push(-1, 1, -1);
+  normals.push(0.0, 1.0, 0.0);
+  vertices.push(-1, 1, 1);
+  normals.push(0.0, 1.0, 0.0);
+  vertices.push(1, 1, 1);
+  normals.push(0.0, 1.0, 0.0);
+  vertices.push(1, 1, -1);
+  normals.push(0.0, 1.0, 0.0);
+
+  vertices.push(-1, -1, -1);
+  normals.push(0.0, -1.0, 0.0);
+  vertices.push(1, -1, -1);
+  normals.push(0.0, -1.0, 0.0);
+  vertices.push(1, -1, 1);
+  normals.push(0.0, -1.0, 0.0);
+  vertices.push(-1, -1, 1);
+  normals.push(0.0, -1.0, 0.0);
+
+  vertices.push(-1, -1, 1);
+  normals.push(-1.0, 0.0, 0.0);
+  vertices.push(-1, 1, 1);
+  normals.push(-1.0, 0.0, 0.0);
+  vertices.push(-1, 1, -1);
+  normals.push(-1.0, 0.0, 0.0);
+  vertices.push(-1, -1, -1);
+  normals.push(-1.0, 0.0, 0.0);
+
+  vertices.push(1, -1, -1);
+  normals.push(1.0, 0.0, 0.0);
+  vertices.push(1, 1, -1);
+  normals.push(1.0, 0.0, 0.0);
+  vertices.push(1, 1, 1);
+  normals.push(1.0, 0.0, 0.0);
+  vertices.push(1, -1, 1);
+  normals.push(1.0, 0.0, 0.0);
+
+  indices.push(0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7,
+  // 8,9,10,
+  // 8,10,11,
+  12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23);
+
+  var verticesBuffer = new Float32Array(vertices);
+  var normalBuffer = new Float32Array(normals);
+  var indicesBuffer = new Uint16Array(indices);
+  // let normalsBuffer = new Float32Array(normals);
+  return {
+    vertices: verticesBuffer,
+    normals: normalBuffer,
+    indices: indicesBuffer
   };
 };
 
@@ -26426,6 +26504,90 @@ module.exports = function (css) {
 	return fixedCss;
 };
 
+
+/***/ }),
+/* 58 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _renderable = __webpack_require__(50);
+
+var _renderable2 = _interopRequireDefault(_renderable);
+
+var _geometryGenerator = __webpack_require__(51);
+
+var _glMatrix = __webpack_require__(0);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Cube = function (_Renderable) {
+  _inherits(Cube, _Renderable);
+
+  function Cube(GL, shader) {
+    _classCallCheck(this, Cube);
+
+    var _this = _possibleConstructorReturn(this, (Cube.__proto__ || Object.getPrototypeOf(Cube)).call(this, _glMatrix.vec3.fromValues(0, -1, 10), _glMatrix.vec3.fromValues(0, 0, 0), _glMatrix.vec3.fromValues(10, 3, 10)));
+
+    _this.GL = GL;
+    _this.shader = shader;
+    _this.cube = (0, _geometryGenerator.generateCube)();
+    _this.initBuffers();
+    return _this;
+  }
+
+  _createClass(Cube, [{
+    key: 'initBuffers',
+    value: function initBuffers() {
+      this.vertexBuffer = this.GL.createBuffer();
+      this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.vertexBuffer);
+      this.GL.bufferData(this.GL.ARRAY_BUFFER, this.cube.vertices, this.GL.STREAM_DRAW);
+
+      this.normalBuffer = this.GL.createBuffer();
+      this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.normalBuffer);
+      this.GL.bufferData(this.GL.ARRAY_BUFFER, this.cube.normals, this.GL.STREAM_DRAW);
+
+      this.indexBuffer = this.GL.createBuffer();
+      this.GL.bindBuffer(this.GL.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+      this.GL.bufferData(this.GL.ELEMENT_ARRAY_BUFFER, this.cube.indices, this.GL.STATIC_DRAW);
+    }
+  }, {
+    key: 'render',
+    value: function render(deltaTime, totalTime, viewMatrix, projectionMatrix) {
+      _get(Cube.prototype.__proto__ || Object.getPrototypeOf(Cube.prototype), 'render', this).call(this, deltaTime, totalTime, viewMatrix, projectionMatrix);
+
+      this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.vertexBuffer);
+      this.GL.vertexAttribPointer(this.shader.attributes["position"], 3, this.GL.FLOAT, false, 0, 0);
+
+      this.GL.bindBuffer(this.GL.ARRAY_BUFFER, this.normalBuffer);
+      this.GL.vertexAttribPointer(this.shader.attributes["normal"], 3, this.GL.FLOAT, false, 0, 0);
+
+      this.GL.uniform4fv(this.shader.uniforms["color"], [.33, .33, .33, 1]);
+
+      this.GL.bindBuffer(this.GL.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+      this.GL.drawElements(this.primativeType, this.cube.indices.length, this.GL.UNSIGNED_SHORT, 0);
+    }
+  }]);
+
+  return Cube;
+}(_renderable2.default);
+
+exports.default = Cube;
 
 /***/ })
 /******/ ]);
