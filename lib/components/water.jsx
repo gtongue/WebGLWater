@@ -22,7 +22,21 @@ export default class Water extends React.Component {
 
   render(){
     return (
-      <div>
+      <div className = "water">
+        <div className = "sliders">
+          <div className = "slider-container">
+            <input id = "amplitude" type="range" min = "0" max = "20" defaultValue = "2"/>
+            <p id = "amplitudeVal"></p>
+          </div>
+          <div className = "slider-container">
+            <input id = "wavelength" type="range" min = "0" max = "200" defaultValue = "35"/>
+            <p id = "wavelengthVal"></p>
+          </div>
+          <div className = "slider-container">
+            <input id = "frequency" type="range" min = "0" max = "200" defaultValue = "15"/>
+            <p id = "frequencyVal"></p>
+          </div>
+        </div>
         <canvas ref = "canvas" style = {{width: "100vw", height: "100vh"}}>
 
         </canvas>
