@@ -25,7 +25,7 @@ export default class Water extends React.Component {
       <div className = "water">
         <div className = "sliders">
           <div className = "slider-container">
-            <input id = "amplitude" type="range" min = "0" max = "20" defaultValue = "2"/>
+            <input id = "amplitude" type="range" min = "0" max = "200" defaultValue = "100"/>
             <p id = "amplitudeVal"></p>
           </div>
           <div className = "slider-container">
