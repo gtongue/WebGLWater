@@ -7880,8 +7880,8 @@ void gerstnerWave(float S, float A, float W, float F, vec2 D){
   float Q = S / (w * A);
   float dotD = dot(position.xz, D);
 
-  float cosine = cos(w * dotD + time * F * w);
-  float sine = sin(w * dotD + time * F * w);
+  float cosine = cos(w * dotD + time * F);
+  float sine = sin(w * dotD + time * F);
 
   vec3 wave = vec3(position.x + (Q * A * D.x * cosine) , A * sine, position.z + (Q * A* cosine * D.y));
   // Actual equation but to allow wave to fit in box I use the above
@@ -7915,7 +7915,7 @@ void main() {
 
   waves = vec3(waves.x/numWaves, waves.y, waves.z/numWaves);
   
-  vec3 transformedNormal = normalMatrix * waveNormals.zyx;    
+  vec3 transformedNormal = normalMatrix * vec3(waveNormals.x, waveNormals.y, waveNormals.z);    
   
   if(abs(position.y) == 4.0){
     gl_Position =  projection * view * model * vec4(vec3(waves.x, position.y, waves.z), 1.0);  
