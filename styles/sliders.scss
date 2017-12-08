@@ -1,45 +1,53 @@
 .sliders{
   width: 100%;
+  height: 100%;
   display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .slider-container {
-  width: 20%;
+  width: 100%;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
 }
 
 .slider-container > input {
-  -webkit-appearance: none;  /* Override default CSS styles */
-  appearance: none;
-  width: 100%; /* Full-width */
-  height: 25px; /* Specified height */
-  background: #d3d3d3; /* Grey background */
-  outline: none; /* Remove outline */
-  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
-  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
-  transition: opacity .2s;
+  width: 100%;
+  height: 10px;
+  margin: 10px;
+  background-color: #cccccc;
+  outline: none; 
+  opacity: 0.7;
+  transition: opacity .4s;
 }
 
-/* Mouse-over effects */
 .slider-container > input:hover {
-  opacity: 1; /* Fully shown on mouse-over */
+  opacity: 1; 
+  cursor: pointer; 
 }
 
-/* The slider handle (use webkit (Chrome, Opera, Safari, Edge) and moz (Firefox) to override default look) */ 
 .slider-container > input::-webkit-slider-thumb {
-  -webkit-appearance: none; /* Override default look */
+  -webkit-appearance: none;
   appearance: none;
-  width: 25px; /* Set a specific slider handle width */
-  height: 25px; /* Slider handle height */
-  background: #4CAF50; /* Green background */
-  cursor: pointer; /* Cursor on hover */
+  width: 20px; 
+  height: 20px; 
+  background-color: #070707; 
 }
 
 .slider-container > input::-moz-range-thumb {
-  width: 25px; /* Set a specific slider handle width */
-  height: 25px; /* Slider handle height */
-  background: #4CAF50; /* Green background */
-  cursor: pointer; /* Cursor on hover */
+  width: 20px;
+  height: 20px; 
+  background-color: #2d598b; 
+}
+
+#r::-webkit-slider-thumb  {
+  background-color: #8b2d2d;   
+}
+#g::-webkit-slider-thumb  {
+  background-color: #41723a;   
+}
+#b::-webkit-slider-thumb  {
+  background-color: #2d598b;   
 }

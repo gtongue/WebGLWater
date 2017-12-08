@@ -3,12 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <title>WebGL Examples</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet">
   <script src="./dist/bundle.js"></script>
 
 </head>
 <body>
-  <div id="root">
+  <div class = "root">
+    <div class="info-container">
+      <div class="title">
+        <h1>
+          WebGL Water Simulation
+        </h1>
+        <div class="checkbox-container">
+          <input type="checkbox" name="wireframe" id="wireframe">
+          <label for="wireframe"> Wireframe </label>
+        </div>
+      </div>
+      <div class = "sliders">
+        <div class = "slider-container">
+          <p id = "amplitudeVal"></p>
+          <input id = "amplitude" type="range" min = "1" max = "200" value = "50"/>
+        </div>
+        <div class = "slider-container">
+          <p id = "wavelengthVal"></p>
+          <input id = "wavelength" type="range" min = "40" max = "150" value = "90"/>
+        </div>
+        <div class = "slider-container">
+          <p id = "frequencyVal"></p>
+          <input id = "frequency" type="range" min = "0" max = "200" value = "100"/>
+        </div>
+        <div class = "slider-container">
+            <p id = "steepnessVal"></p>
+            <input id = "steepness" type="range" min = "0" max = "100" value = "100"/>
+        </div>
+
+        <div class = "slider-container">
+            <p id = "rVal"></p>
+            <input id = "r" type="range" min = "0" max = "255" value = "125"/>
+        </div>
+        <div class = "slider-container">
+            <p id = "gVal"></p>
+            <input id = "g" type="range" min = "0" max = "255" value = "125"/>
+        </div>
+        <div class = "slider-container">
+            <p id = "bVal"></p>
+            <input id = "b" type="range" min = "0" max = "255" value = "235"/>
+        </div>
+        <div class = "slider-container">
+            <p id = "aVal"></p>
+            <input id = "a" type="range" min = "0" max = "255" value = "125"/>
+        </div>
+      </div>
+    </div>
+    <div class="webgl-container">
+      <canvas id = "webgl" ref = "canvas">
+  
+      </canvas>
+    </div>
   </div>
 </body>
 </html>
