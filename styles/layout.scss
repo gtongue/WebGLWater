@@ -71,3 +71,22 @@
   justify-content: center;
   align-items: center;
 }
+
+.info {
+  text-align: center;
+  font-size: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 50px;
+}
+
+.keys {
+  height: 50px;
+  margin-left: 10px;
+}
+
+.title h1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 50px;
+}

@@ -22,15 +22,15 @@
       <div class = "sliders">
         <div class = "slider-container">
           <p id = "amplitudeVal"></p>
-          <input id = "amplitude" type="range" min = "1" max = "200" value = "100"/>
+          <input id = "amplitude" type="range" min = "1" max = "300" value = "150"/>
         </div>
         <div class = "slider-container">
           <p id = "wavelengthVal"></p>
-          <input id = "wavelength" type="range" min = "40" max = "150" value = "95"/>
+          <input id = "wavelength" type="range" min = "40" max = "400" value = "200"/>
         </div>
         <div class = "slider-container">
           <p id = "frequencyVal"></p>
-          <input id = "frequency" type="range" min = "0" max = "200" value = "100"/>
+          <input id = "frequency" type="range" min = "0" max = "400" value = "300"/>
         </div>
         <div class = "slider-container">
             <p id = "steepnessVal"></p>
@@ -56,6 +56,12 @@
       </div>
     </div>
     <div class="webgl-container">
+      <div class="info">
+        A simulation of waves using vanilla JavaScript and WebGL
+        </br>
+        Use the arrow keys on your keyboard to rotate the view
+        <!-- <img class = "keys" src = "./res/keys.png" /> -->
+      </div>
       <canvas id = "webgl" ref = "canvas">
   
       </canvas>
