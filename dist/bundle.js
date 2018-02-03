@@ -2968,11 +2968,10 @@ __webpack_require__(10);
 
 document.addEventListener("DOMContentLoaded", () => {
   let canvas = document.getElementById("webgl");
-  let GL = canvas.getContext("webgl");
+  let GL = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  GL = canvas.getContext('webgl');
+  canvas.height = window.innerHeight;  
+  
   new __WEBPACK_IMPORTED_MODULE_0__waterGL__["a" /* default */](GL);
 });
 
